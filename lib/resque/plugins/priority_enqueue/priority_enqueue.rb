@@ -20,7 +20,7 @@ module Resque::Plugins
         end
         return nil if before_hooks.any? { |result| result == false }
 
-        Job.create(queue, klass, *args)
+        Job.priority_create(queue, klass, *args)
 
         Plugin.after_enqueue_hooks(klass).each do |hook|
           klass.send(hook, *args)
@@ -39,9 +39,8 @@ module Resque
   class Job
 
     class << self
-      alias_method :original_create, :create
 
-      def create(queue, klass, *args)
+      def priority_create(queue, klass, *args)
         Resque.validate(klass, queue)
 
         if Resque.inline?
